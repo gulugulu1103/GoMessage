@@ -100,6 +100,11 @@ func (this *User) DoMessage(msg string) {
 			this.SendMessage("您已经更新用户名：" + this.Name + "\n")
 		}
 	} else if len(msg) > 5 && msg[:4] == "msg " { // 消息格式：msg 名字 消息内容
+		// 检查消息格式是否正确
+		if len(strings.Split(msg, " ")) < 3 {
+			this.SendMessage("消息格式不正确，请使用\"msg 用户名 消息内容\"格式\n")
+			return
+		}
 		// 1. 获取对方的用户名
 		toName := strings.Split(msg, " ")[1]
 		if toName == "" {
@@ -119,6 +124,7 @@ func (this *User) DoMessage(msg string) {
 			return
 		}
 		// 4. 发送
+		this.SendMessage("你对" + toUser.Name + "说：" + content + "\n")
 		toUser.SendMessage(this.Name + "对你说：" + content + "\n")
 	} else {
 		this.server.BroadCast(this, msg)
