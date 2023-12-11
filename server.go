@@ -60,8 +60,9 @@ func (this *Server) Handler(conn net.Conn) {
 	this.mapLock.Unlock()
 
 	this.BroadCast(user, "已上线")
-	select {}
 
+	// 阻塞的监听用户的channel的方法
+	select {}
 }
 
 func (this *Server) Start() {
