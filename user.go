@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name   string
@@ -96,7 +99,27 @@ func (this *User) DoMessage(msg string) {
 			this.Name = newName
 			this.SendMessage("您已经更新用户名：" + this.Name + "\n")
 		}
-
+	} else if len(msg) > 5 && msg[:4] == "msg " { // 消息格式：msg 名字 消息内容
+		// 1. 获取对方的用户名
+		toName := strings.Split(msg, " ")[1]
+		if toName == "" {
+			this.SendMessage("消息格式不正确，请使用\"msg 用户名 消息内容\"格式\n")
+			return
+		}
+		// 2. 根据用户名得到对方User对象
+		toUser, ok := this.server.OnlineMap[toName] // toUser是一个指针，指向对方的User对象
+		if !ok {
+			this.SendMessage("该用户名不存在\n")
+			return
+		}
+		// 3. 获取消息内容，通过对方的User对象将消息内容发送过去
+		content := strings.Split(msg, " ")[2]
+		if content == "" {
+			this.SendMessage("无消息内容，请重发，格式：msg 用户名 消息内容\n")
+			return
+		}
+		// 4. 发送
+		toUser.SendMessage(this.Name + "对你说：" + content + "\n")
 	} else {
 		this.server.BroadCast(this, msg)
 	}
