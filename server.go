@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -58,7 +60,7 @@ func (this *Server) Handler(conn net.Conn) {
 	user := NewUser(conn, this)
 
 	user.Online() // 用户上线
-
+	isLive := make(chan bool)
 	go func() {
 		buffer := make([]byte, 4096)
 		for {
@@ -77,10 +79,32 @@ func (this *Server) Handler(conn net.Conn) {
 			msg := string(buffer[:n-1])
 			// 用户针对msg进行消息处理
 			user.DoMessage(msg)
+
+			isLive <- true // 证明当前用户是活跃的
+
 		}
 	}()
 
-	select {}
+	for {
+		select {
+		case <-isLive: // 当前用户是活跃的，应该重置定时器
+			// 不做任何事情，为了激活select，更新下面的定时器
+		case <-time.After(60 * time.Second): // time.After是一个channel，60秒后，自动往channel中写内容，此时select就可以执行了
+			// 超时退出
+			user.SendMessage("你已超时，已被踢出")
+			// 销毁用的资源
+			close(user.C)
+			// 关闭连接
+			err := conn.Close()
+			if err != nil { // 关闭失败
+				fmt.Println("conn.Close err:", err)
+				return
+			}
+
+			runtime.Goexit() // 结束当前的goroutine
+
+		}
+	}
 }
 
 func (this *Server) Start() {
