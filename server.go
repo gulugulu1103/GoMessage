@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -61,7 +62,27 @@ func (this *Server) Handler(conn net.Conn) {
 
 	this.BroadCast(user, "已上线")
 
-	// 阻塞的监听用户的channel的方法
+	go func() {
+		buffer := make([]byte, 4096)
+		for {
+			n, err := conn.Read(buffer)
+			// 读取用户发送的消息，Read方法是读取客户端发送的数据，如果客户端没有write，那么就会阻塞在这里
+			if err != nil && err != io.EOF {
+				fmt.Println("conn.Read err:", err)
+				return
+			}
+			if n == 0 {
+				this.BroadCast(user, "下线")
+				return
+			}
+
+			// 提取用户的消息（去除'\n'）
+			msg := string(buffer[:n-1])
+
+			this.BroadCast(user, msg)
+		}
+	}()
+
 	select {}
 }
 
