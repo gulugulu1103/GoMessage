@@ -81,8 +81,12 @@ func (this *User) DoMessage(msg string) {
 			this.SendMessage(onlineMsg)
 		}
 		this.server.mapLock.Unlock()
-	} else if len(msg) > 7 && msg[:7] == "rename " { // 消息格式：rename 新名字
+	} else if len(msg) >= 7 && msg[:7] == "rename " { // 消息格式：rename 新名字
 		newName := msg[7:]
+		if newName == "" {
+			this.SendMessage("名字错误，请重试，格式：rename 新名字\n")
+			return
+		}
 		// 判断name是否存在
 		_, ok := this.server.OnlineMap[newName]
 		if ok {
@@ -99,7 +103,7 @@ func (this *User) DoMessage(msg string) {
 			this.Name = newName
 			this.SendMessage("您已经更新用户名：" + this.Name + "\n")
 		}
-	} else if len(msg) > 4 && msg[:4] == "msg " { // 消息格式：msg 名字 消息内容
+	} else if len(msg) >= 4 && msg[:4] == "msg " { // 消息格式：msg 名字 消息内容
 		// 检查消息格式是否正确
 		if len(strings.Split(msg, " ")) < 3 {
 			this.SendMessage("消息格式不正确，请使用\"msg 用户名 消息内容\"格式\n")
