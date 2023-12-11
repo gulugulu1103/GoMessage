@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Server 服务器结构体
 type Server struct {
 	Ip   string
 	Port int
@@ -52,6 +53,7 @@ func (this *Server) BroadCast(user *User, msg string) {
 
 }
 
+// Handler 处理当前连接的业务
 func (this *Server) Handler(conn net.Conn) {
 	// 当前链接的业务
 	//fmt.Println("链接建立成功")
@@ -107,6 +109,7 @@ func (this *Server) Handler(conn net.Conn) {
 	}
 }
 
+// Start 启动服务器的接口
 func (this *Server) Start() {
 	// socket listen
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Ip, this.Port))
