@@ -3,20 +3,22 @@ package main
 import "net"
 
 type User struct {
-	Name string
-	Addr string
-	C    chan string
-	conn net.Conn
+	Name   string
+	Addr   string
+	C      chan string
+	conn   net.Conn
+	server *Server // 当前用户所属的Server，用于后续退出的消息广播
 }
 
 // NewUser 用户的构造函数
-func NewUser(conn net.Conn) *User {
+func NewUser(conn net.Conn, server *Server) *User {
 	userAddr := conn.RemoteAddr().String()
 	user := &User{
-		Name: userAddr,
-		Addr: userAddr,
-		C:    make(chan string),
-		conn: conn,
+		Name:   userAddr,
+		Addr:   userAddr,
+		C:      make(chan string),
+		conn:   conn,
+		server: server,
 	}
 
 	go user.ListenMessage() // 启动
@@ -34,4 +36,31 @@ func (this *User) ListenMessage() {
 		}
 	}
 
+}
+
+// Online 用户上线，将用户加入到OnlineMap中
+func (this *User) Online() {
+	// 用户上线，将用户加入到OnlineMap中
+	this.server.mapLock.Lock()
+	this.server.OnlineMap[this.Name] = this
+	this.server.mapLock.Unlock()
+
+	this.server.BroadCast(this, "已上线")
+
+}
+
+// Offline 用户下线，将用户从OnlineMap中删除
+func (this *User) Offline() {
+	// 用户下线，将用户从OnlineMap中删除
+	this.server.mapLock.Lock()
+	// 将用户从OnlineMap中删除
+	delete(this.server.OnlineMap, this.Name)
+	this.server.mapLock.Unlock()
+
+	this.server.BroadCast(this, "已下线")
+}
+
+// DoMessage 用户处理消息的业务
+func (this *User) DoMessage(msg string) {
+	this.server.BroadCast(this, msg)
 }
