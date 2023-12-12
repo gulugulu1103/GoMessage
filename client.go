@@ -11,6 +11,7 @@ type Client struct {
 	ServerPort int
 	Name       string
 	conn       net.Conn
+	flag       int // 当前client的模式
 }
 
 func NewClient(serverIp string, serverPort int) *Client {
@@ -18,6 +19,7 @@ func NewClient(serverIp string, serverPort int) *Client {
 	client := &Client{
 		ServerIp:   serverIp,
 		ServerPort: serverPort,
+		flag:       999,
 	}
 
 	// 链接server
@@ -34,14 +36,65 @@ func NewClient(serverIp string, serverPort int) *Client {
 	return client
 }
 
+// menu displays the menu options for the client and prompts the user to select an option.
+// It reads the input from the user and validates if the input is within the range of available options.
+// If the input is valid, it returns true. Otherwise, it displays an error message and returns false.
+func (client *Client) menu() bool {
+	var choice int
+
+	fmt.Println("1.公聊模式")
+	fmt.Println("2.私聊模式")
+	fmt.Println("3.更新用户名")
+	fmt.Println("0.退出")
+
+	_, err := fmt.Scanln(&choice)
+	if err != nil {
+		return false
+	}
+
+	if choice >= 0 && choice <= 3 {
+		client.flag = choice
+		return true
+	} else {
+		fmt.Println(">>>>>请输入合法范围内的数字<<<<<")
+		return false
+	}
+}
+
+func (client *Client) Run() {
+	for client.flag != 0 {
+		for client.menu() != true {
+		}
+	}
+
+	switch client.flag {
+	case 1: // 公聊模式
+		fmt.Println("公聊模式选择")
+		break
+	case 2: // 私聊模式
+		fmt.Println("私聊模式选择")
+		break
+	case 3: // 更新用户名
+		fmt.Println("更新用户名")
+		break
+	}
+
+}
+
 var serverIp string
 var serverPort int
 
+// init sets the initial values of the server IP and port.
 func init() {
 	flag.StringVar(&serverIp, "ip", "127.0.0.1", "设置服务器IP地址(默认是127.0.0.1)")
 	flag.IntVar(&serverPort, "port", 8888, "设置服务器端口(默认是8888)")
 }
 
+// main is the entry point for the application.
+// It parses command line arguments and initializes a client.
+// If the client fails to initialize, it prints an error message and exits.
+// Otherwise, it prints a success message and starts the client's business logic.
+// The function then enters a select statement, which blocks the main goroutine and keeps the program running.
 func main() {
 	flag.Parse() // 解析命令行参数
 
