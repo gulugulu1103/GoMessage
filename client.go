@@ -61,6 +61,60 @@ func (client *Client) menu() bool {
 	}
 }
 
+func (client *Client) Rename() {
+	fmt.Println(">>>>>请输入用户名：")
+	_, err := fmt.Scanln(&client.Name)
+	if err != nil {
+		return
+	}
+
+	sendMsg := "rename " + client.Name + "\n"
+	_, err = client.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("conn.Write err:", err)
+		return
+	}
+}
+
+func (client *Client) SecretChat() {
+	fmt.Println(">>>>>请输入聊天对象用户名：")
+	var chatName string
+	_, err := fmt.Scanln(&chatName)
+	if err != nil {
+		return
+	}
+
+	fmt.Println(">>>>>请输入聊天内容：")
+	var chatMsg string
+	_, err = fmt.Scanln(&chatMsg)
+	if err != nil {
+		return
+	}
+
+	sendMsg := "msg " + chatName + " " + chatMsg + "\n"
+	_, err = client.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("conn.Write err:", err)
+		return
+	}
+}
+
+func (client *Client) PublicChat() {
+	fmt.Println(">>>>>请输入聊天内容：")
+	var chatMsg string
+	_, err := fmt.Scanln(&chatMsg)
+	if err != nil {
+		return
+	}
+
+	sendMsg := chatMsg + "\n"
+	_, err = client.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("conn.Write err:", err)
+		return
+	}
+}
+
 func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
@@ -69,13 +123,13 @@ func (client *Client) Run() {
 
 	switch client.flag {
 	case 1: // 公聊模式
-		fmt.Println("公聊模式选择")
+		client.PublicChat()
 		break
 	case 2: // 私聊模式
-		fmt.Println("私聊模式选择")
+		client.SecretChat()
 		break
 	case 3: // 更新用户名
-		fmt.Println("更新用户名")
+		client.Rename()
 		break
 	}
 
