@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"os"
 )
 
 type Client struct {
@@ -135,6 +137,26 @@ func (client *Client) Run() {
 
 }
 
+// DealResponse 用于处理server回应的消息，直接显示到标准输出即可
+func (client *Client) DealResponse() {
+	// 一旦client.conn有数据，就直接copy到stdout标准输出上，永久阻塞监听
+	_, err := io.Copy(os.Stdout, client.conn)
+	if err != nil {
+		return
+	}
+
+	for {
+		// 接收server发送的消息
+		buffer := make([]byte, 4096) // 4k大小的缓冲区
+		// 一旦client.conn有数据，就直接copy到stdout标准输出上，永久阻塞监听
+		_, err := client.conn.Read(buffer)
+		if err != nil {
+			return
+		}
+		fmt.Println(string(buffer))
+	}
+}
+
 var serverIp string
 var serverPort int
 
@@ -159,6 +181,9 @@ func main() {
 	}
 
 	fmt.Println(">>>>>链接服务器成功...")
+
+	// 单独开启一个goroutine去处理server的回执消息
+	go client.DealResponse() // 处理server回应的消息
 
 	// 启动客户端的业务
 	client.Run()
