@@ -43,6 +43,8 @@ func init() {
 }
 
 func main() {
+	flag.Parse() // 解析命令行参数
+
 	client := NewClient(serverIp, serverPort)
 	if client == nil {
 		fmt.Println(">>>>>链接服务器失败...")
