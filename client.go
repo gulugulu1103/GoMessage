@@ -120,9 +120,12 @@ func (client *Client) PublicChat() {
 func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
-		}
+		} // 显示菜单，接收合法输入
 
 		switch client.flag {
+		case 0: // 退出
+			fmt.Println(">>>>>退出系统...")
+			break
 		case 1: // 公聊模式
 			client.PublicChat()
 			break
