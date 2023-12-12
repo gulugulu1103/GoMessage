@@ -121,20 +121,19 @@ func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
 		}
-	}
 
-	switch client.flag {
-	case 1: // 公聊模式
-		client.PublicChat()
-		break
-	case 2: // 私聊模式
-		client.SecretChat()
-		break
-	case 3: // 更新用户名
-		client.Rename()
-		break
+		switch client.flag {
+		case 1: // 公聊模式
+			client.PublicChat()
+			break
+		case 2: // 私聊模式
+			client.SecretChat()
+			break
+		case 3: // 更新用户名
+			client.Rename()
+			break
+		}
 	}
-
 }
 
 // DealResponse 用于处理server回应的消息，直接显示到标准输出即可
